@@ -24,7 +24,7 @@ app.use(session({
   saveUninitialized: true
 }))
 
-/**** PASSPORT */
+// PASSPORT
 app.use(passport.initialize()); // passport init
 app.use(passport.session()); // https://stackoverflow.com/questions/22052258/what-does-passport-session-middleware-do/28994045#28994045
 
@@ -47,7 +47,6 @@ passport.use(new LocalStrategy({ usernameField: 'email' },
   }
 ));
 
-// **** 
 // Serialize y Deserialize
 // las funciones serialize y deserialize se encargan de interactuar cookie|session para lograr
 // esa persistencia entre server y browser, utilizando cookies y session.
@@ -66,11 +65,17 @@ passport.deserializeUser(function(id, done) {
         .then(user => done(null, user))
 });
 
-/********************* */
-
 app.use('/', routes);
 
-db.sync({ force: false }).then((con) => {
-  console.log(`${con.options.dialect} database ${con.config.database} connected at ${con.config.host}:${con.config.port}`)
-  app.listen(3000, () => console.log('SERVER LISTENING AT PORT 3000'))
+// MIDDLEWARE ERROR
+app.use(function (err, req, res, next) {
+  console.error(err)
+  res.status(500).send(err)
 })
+
+db.sync({ force: false})
+  .then(con => {
+    console.log(`dialect: ${con.options.dialect} database ${con.config.database} connected at ${con.config.host}:${con.config.port}`)
+    app.listen(3000, () => console.log('SERVER LISTENING AT PORT 3000'))
+  })
+  .catch(e => console.log(e))
