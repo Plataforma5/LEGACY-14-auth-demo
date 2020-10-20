@@ -55,10 +55,25 @@ router.post('/users', (req, res) => {
     .then(user => res.send(user))
 })
 
-router.post('/login', passport.authenticate('local'), (req, res) => {
-  console.log('USER', req.user)
-  res.redirect('/');
-})
+//LOGIN WITH CUSTOM ERROR
+/*
+router.post('/login', function(req, res, next) {
+  passport.authenticate('local', function(err, user, info) {
+    if (err) { return next("Algo mio" + err) }
+    if (!user) {
+      // *** Display message without using flash option
+      // re-render the login form with a message
+      return res.json({ message: info.message })
+    }
+    req.logIn(user, function(err) {
+      if (err) { return next(err); }
+      // Estamos logeados!
+      return res.json(user)
+    });
+  })(req, res, next);
+});
+*/
+
 
 router.get('/logout', (req, res) => {
   res.send(templates.logout);
@@ -74,3 +89,6 @@ router.post('/logout', (req, res) => {
 })
 
 module.exports = router
+
+
+
