@@ -3,7 +3,9 @@ const crypto = require('crypto');
 
 const db = require('../config/db');
 
-const User = db.define('users', {
+class User extends S.Model {}
+
+User.init({
   email: {
     type: S.STRING,
     allowNull: false,
@@ -15,7 +17,7 @@ const User = db.define('users', {
   salt: {
     type: S.STRING,
   }
-})
+}, { sequelize: db, modelName: 'user' });
 
 User.addHook('beforeCreate', (user) => {
   user.salt = crypto.randomBytes(20).toString('hex');
