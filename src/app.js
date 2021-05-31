@@ -8,9 +8,9 @@ const cookieParser = require("cookie-parser");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 
-const routes = require("./src/routes");
-const db = require("./src/db");
-const User = require("./src/models");
+const routes = require("./routes");
+const db = require("./db");
+const User = require("./models");
 
 const app = express();
 
@@ -45,22 +45,23 @@ app.use(passport.session()); // https://stackoverflow.com/questions/22052258/wha
 // auth strategy definition
 // https://github.com/jaredhanson/passport-local
 passport.use(
-  new LocalStrategy(
-    { usernameField: "email" },
-    function (inputEmail, password, done) {
-      User.findOne({ where: { email: inputEmail } })
-        .then((user) => {
-          if (!user) {
-            return done("Incorrect username.", false);
-          }
-          if (!user.validPassword(password)) {
-            return done("Incorrect password.", false);
-          }
-          return done(null, user); //ESTA TODO OK!
-        })
-        .catch(done);
-    }
-  )
+  new LocalStrategy({ usernameField: "email" }, function (
+    inputEmail,
+    password,
+    done
+  ) {
+    User.findOne({ where: { email: inputEmail } })
+      .then((user) => {
+        if (!user) {
+          return done("Incorrect username.", false);
+        }
+        if (!user.validPassword(password)) {
+          return done("Incorrect password.", false);
+        }
+        return done(null, user); //ESTA TODO OK!
+      })
+      .catch(done);
+  })
 );
 
 // Serialize y Deserialize
