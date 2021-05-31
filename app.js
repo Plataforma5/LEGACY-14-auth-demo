@@ -8,9 +8,9 @@ const cookieParser = require("cookie-parser");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 
-const routes = require("./routes");
-const db = require("./config/db");
-const User = require("./models");
+const routes = require("./src/routes");
+const db = require("./src/db");
+const User = require("./src/models");
 
 const app = express();
 
