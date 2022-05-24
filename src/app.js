@@ -2,81 +2,75 @@ const cors = require("cors");
 const path = require("path");
 const morgan = require("morgan");
 const express = require("express");
-const session = require("express-session");
-const cookieParser = require("cookie-parser");
-
-const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
 
 const routes = require("./routes");
 const db = require("./db");
 const User = require("./models");
-
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
 const app = express();
 
-app.use(
-  cors({
-    origin: ["http://localhost:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: ["http://localhost:3000"],
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     credentials: true,
+//   })
+// );
+
+app.use((req, res, next) => {
+  console.log(req.cookies);
+  next();
+});
 
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// req.cookies | parser middelwares |  https://www.npmjs.com/package/cookie-parser
 app.use(cookieParser());
 
-// req.session | express-session init | https://www.npmjs.com/package/express-session
+// express session
 app.use(
   session({
-    secret: "bootcamp",
-    resave: true,
+    secret: "keyboard cat",
+    resave: false,
     saveUninitialized: true,
   })
 );
 
-// PASSPORT
-app.use(passport.initialize()); // passport init
-app.use(passport.session()); // https://stackoverflow.com/questions/22052258/what-does-passport-session-middleware-do/28994045#28994045
+// PASSPORT INITIALIZE
+app.use(passport.initialize());
+// PASSPORT SESSION
+app.use(passport.session());
 
-// auth strategy definition
-// https://github.com/jaredhanson/passport-local
+// Local Strategy
 passport.use(
   new LocalStrategy({ usernameField: "email" }, function (
-    inputEmail,
+    email,
     password,
     done
   ) {
-    User.findOne({ where: { email: inputEmail } })
+    User.findOne({ where: { email } })
       .then((user) => {
-        if (!user) {
-          return done("Incorrect username.", false);
+        if (!user) done(null, false);
+        else {
+          if (user.validPassword(password)) done(null, user);
+          else done(null, false);
         }
-        if (!user.validPassword(password)) {
-          return done("Incorrect password.", false);
-        }
-        return done(null, user); //ESTA TODO OK!
       })
-      .catch(done);
+      .catch((err) => {
+        done(err, false);
+      });
   })
 );
 
-// Serialize y Deserialize
-// las funciones serialize y deserialize se encargan de interactuar cookie|session para lograr
-// esa persistencia entre server y browser, utilizando cookies y session.
-
-// serialize: how we save the user
-// https://stackoverflow.com/questions/27637609/understanding-passport-serialize-deserialize
-// probar cuando sucede lo de serializeUser luego del /login? y luego que sucede con el
-// deserialize al momento que el usuario ingresa a /private logeado..
+// Serialize & Deserialize
 passport.serializeUser(function (user, done) {
   done(null, user.id);
 });
 
-// deserialize: how we look for the user
 passport.deserializeUser(function (id, done) {
   User.findByPk(id).then((user) => done(null, user));
 });

@@ -1,6 +1,7 @@
 const Sequelize = require("sequelize");
 
-const db = new Sequelize("postgres://postgres@localhost/passport_demo", {
+const db = new Sequelize("auth", "postgres", "1234", {
+  host: "localhost",
   logging: false,
   dialect: "postgres",
 });
